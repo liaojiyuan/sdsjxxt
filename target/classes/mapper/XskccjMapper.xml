@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hebut.sdsjxxt.mapper.XskccjMapper">
+	<select id="getXskccjListByCourseId" resultType="com.hebut.sdsjxxt.pojo.Xskccj">
+		select xsjxnrcj.course_id,sum(xsjxnrcj.grade) as grade,count(*) as total,xsjxnrcj.user_id 
+	    from xsjxnrcj 
+		where xsjxnrcj.course_id=#{id}
+	    group by xsjxnrcj.course_id,xsjxnrcj.user_id
+	</select>
+	
+	<select id="getXskccjTjVOPageByCondition" resultType="com.hebut.sdsjxxt.dvo.XskccjTjVO">
+		select xskccj.id ,xskccj.course_id ,xskccj.grade,xskccj.total,xskccj.user_id ,
+		user.name,user.banji_id as banjiId,user.banji_name as banjiName,course.grade as courseGrade
+	    from xskccj left join user on xskccj.user_id=user.xuehao
+	    left join course on xskccj.course_id=course.id
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+</mapper>

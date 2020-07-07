@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hebut.sdsjxxt.mapper.XszyMapper">
+	
+	<update id="updateXszyStageBatchById" parameterType="java.util.List">
+		update xszy
+		<trim prefix="set" prefixOverrides=",">
+			<trim prefix="stage=case" suffix=" end ,">
+				<foreach collection="xszyList" index="index" item="item" >
+					when id=#{item.id} then #{item.stage}
+				</foreach>
+			</trim>
+			<trim prefix="update_time=case" suffix=" end ">
+				<foreach collection="xszyList" index="index" item="item" >
+					when id=#{item.id} then NOW()
+				</foreach>
+			</trim>
+		</trim>
+		where id in
+		<foreach collection="xszyList" index="index" item="item" open="(" separator="," close=")">
+			#{item.id}
+		</foreach>
+	</update>
+	
+	<update id="updateXszyStageById" >
+		update xszy set 
+		stage=#{stage,jdbcType=INTEGER}, 
+		update_time=NOW() 
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+	
+	<update id="updateXszyStage" parameterType="com.hebut.sdsjxxt.pojo.Xszy" >
+		update xszy set 
+		stage=#{stage,jdbcType=INTEGER}, 
+		update_time=NOW()
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getXszyJxzyVOPageByCondition" resultType="com.hebut.sdsjxxt.dvo.XszyJxzyVO">
+	 select xszy.id,xszy.jsjxzy_id,xszy.course_id,xszy.user_id,xszy.teacher_id,
+		   xszy.answer,xszy.stage,xszy.grade,xszy.stu_score,xszy.submit_time,xszy.submit_last_time,
+		   xszy.create_time,xszy.update_time,xszy.jxnr_id,
+		   jsjxzy.stage as jxzyStage,jsjxzy.homework ,jsjxzy.total_score,jsjxzy.status,
+		   jsjxzy.start_time,jsjxzy.end_time,jsjxzy.weight as jxzyWeight,
+		   jxnr.course_content,jxnr.course_name,
+ 		   user.xuehao ,user.banji_name,
+		   (case when xszy.stage=1 then '未提交' 
+		         when xszy.stage=2 then '已提交，未截止' 
+		         when xszy.stage=3 then '已截止，未批改' 
+		         when xszy.stage=4 then '已批改'
+		    end) as xszyStageName,
+		    (case when jsjxzy.stage=1 then '课前' 
+		         when jsjxzy.stage=2 then '课中' 
+		         when jsjxzy.stage=3 then '课后' 
+		    end) as jxzyStageName
+		   from xszy left join jsjxzy on xszy.jsjxzy_id = jsjxzy.id
+		   left join jxnr on jsjxzy.jxnr_id = jxnr.id
+		   left join course on xszy.course_id = course.id
+		   left join user on xszy.user_id = user.xuehao
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	
+	<select id="selectXszyJxzyVOById" resultType="com.hebut.sdsjxxt.dvo.XszyJxzyVO">
+	 select xszy.id,xszy.jsjxzy_id,xszy.course_id,xszy.user_id,xszy.teacher_id,
+		   xszy.answer,xszy.stage,xszy.grade,xszy.stu_score,xszy.submit_time,xszy.submit_last_time,
+		   xszy.create_time,xszy.update_time,xszy.jxnr_id,
+		   jsjxzy.stage as jxzyStage,jsjxzy.homework ,jsjxzy.total_score,jsjxzy.status,
+		   jsjxzy.start_time,jsjxzy.end_time,jsjxzy.weight as jxzyWeight,
+		   jxnr.course_content,jxnr.course_name,
+ 		   user.xuehao ,user.banji_name,
+		   (case when xszy.stage=1 then '未提交' 
+		         when xszy.stage=2 then '已提交，未截止' 
+		         when xszy.stage=3 then '已截止，未批改' 
+		         when xszy.stage=4 then '已批改'
+		    end) as xszyStageName,
+		    (case when jsjxzy.stage=1 then '课前' 
+		         when jsjxzy.stage=2 then '课中' 
+		         when jsjxzy.stage=3 then '课后' 
+		    end) as jxzyStageName
+		   from xszy left join jsjxzy on xszy.jsjxzy_id = jsjxzy.id
+		   left join jxnr on jsjxzy.jxnr_id = jxnr.id
+		   left join course on xszy.course_id = course.id
+		   left join user on xszy.user_id = user.xuehao
+		where xszy.id=#{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="getXszyCjcxVOPageByCondition" resultType="com.hebut.sdsjxxt.dvo.XszyCjcxVO">
+		select  xszy.id,xszy.user_id,xszy.teacher_id,xszy.jsjxzy_id,jsjxzy.stage as jxzyStage,
+		jsjxzy.total_score as totalScore,xszy.stu_score ,jsjxzy.grade as jxzyGrade,xszy.grade as xszyGrade,
+		jxnr.course_content as courseContent,jxnr.course_name as courseName,user.name as teacherName
+		from xszy left join jsjxzy on xszy.jsjxzy_id=jsjxzy.id
+		left join jxnr on xszy.jxnr_id=jxnr.id
+		left join user on xszy.teacher_id=user.xuehao
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	
+</mapper>

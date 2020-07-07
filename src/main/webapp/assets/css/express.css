@@ -1,0 +1,60 @@
+.ml10 {
+    margin-left: 10px;
+}
+.ml30{
+	margin-left:30px;
+}
+.mr10 {
+    margin-right: 10px;
+}
+.pt10 {
+    padding-top: 10px;
+}
+.dis_change_textarea{
+    resize:none;
+}
+
+.pay-qrcode {
+    width: 200px;
+    height: 200px;
+}
+
+.red-span {
+    color:red;
+}
+
+/* jquery validate 验证 */
+input.error { border: 1px solid red; }
+textarea.error { border: 1px solid red; }
+label.error {
+    padding-left: 16px;
+
+    padding-bottom: 2px;
+
+    font-weight: bold;
+
+    color: #EA5200;
+}
+.daterange_width{
+	min-width:200px;
+}
+.datetimerange_width{
+	min-width:310px;
+}
+.select_width{
+	min-width:120px;
+	width:auto;
+}
+/* .expandingArea{
+    position:relative;
+}
+textarea{
+    position:absolute;
+    top:0;
+    left:0；
+    height:100%;
+}
+pre{
+    display:block;
+    visibility:hidden;
+} */

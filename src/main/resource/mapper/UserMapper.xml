@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hebut.sdsjxxt.mapper.UserMapper">
+	<select id="getTeacherListByBanjiId" resultType="com.hebut.sdsjxxt.pojo.User">
+		select distinct user.xuehao,user.name from 
+		banji left join course on course.banji_ids like concat('%',banji.id,'%')
+		left join user on course.teacher_id=user.xuehao
+		where banji.id=#{id} and user.role=2
+	</select>
+</mapper>

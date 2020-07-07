@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hebut.sdsjxxt.mapper.XsjxnrcjMapper">
+	<select id="getXsjxnrcjListByJxnrId" resultType="com.hebut.sdsjxxt.pojo.Xsjxnrcj">
+	    select xszy.jxnr_id ,sum(xszy.grade) as grade,xszy.user_id ,xszy.course_id
+	    from jxnr left join xszy on jxnr.id=xszy.jxnr_id 
+	    where jxnr.id=#{id} group by jxnr.id ,xszy.user_id
+	</select>
+	
+	<select id="getXsjxnrcjTjVOPageByCondition" resultType="com.hebut.sdsjxxt.dvo.XsjxnrcjTjVO">
+	    select xsjxnrcj.id,xsjxnrcj.jxnr_id ,xsjxnrcj.user_id ,xsjxnrcj.grade,
+	    user.banji_id as banjiId,user.banji_name as banjiName,user.name,
+	    jxnr.grade as jxnrGrade,xsjxnrcj.course_id,jxnr.course_content as courseContent
+	    from xsjxnrcj left join jxnr on xsjxnrcj.jxnr_id=jxnr.id
+	    left join user on xsjxnrcj.user_id=user.xuehao 
+	    <where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+</mapper>

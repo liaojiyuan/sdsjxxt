@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hebut.sdsjxxt.mapper.JxnrMapper">
+	
+	<sql id="Base_Jxnr_Column_List">
+		id, course_id, course_name, course_aim, course_content, grade, weight,leave,create_user_id,
+		create_time, update_time,crc64_course_aim,crc64_course_content,jxnr.sf_finished,jxnr.sf_tj
+	</sql>
+	<sql id="Base_JxnrCourseVO_Column_List">
+		jxnr.id, jxnr.course_id, jxnr.course_name, jxnr.course_aim, jxnr.course_content, 
+		jxnr.grade, jxnr.weight,jxnr.leave,jxnr.create_user_id,jxnr.sf_finished,jxnr.sf_tj,
+		jxnr.create_time, jxnr.update_time,jxnr.crc64_course_aim,jxnr.crc64_course_content,
+		course.grade as grade2,course.leave as courseLeave,
+		course.start_year ,course.start_date,course.end_date,course.teacher_name,course.banji_ids
+	</sql>
+	
+	<select id="getJxnrCourseVOByJxnrId" parameterType="java.lang.Long" resultType="com.hebut.sdsjxxt.dvo.JxnrCourseVO">
+		select jxnr.id,jxnr.course_id,jxnr.course_name,jxnr.course_aim,jxnr.course_content,
+		jxnr.weight,jxnr.grade,jxnr.leave,jxnr.create_user_id,jxnr.create_time, jxnr.update_time,
+		jxnr.crc64_course_aim,jxnr.crc64_course_content,jxnr.sf_finished,jxnr.sf_tj,
+		course.grade as grade2,course.start_year ,course.start_date,course.end_date,
+		course.teacher_name,course.banji_ids,course.leave as courseLeave
+		from jxnr left join course on jxnr.course_id=course.id
+		where jxnr.id=#{id,jdbcType=BIGINT} 
+		order by jxnr.create_time desc
+	</select>
+	<select id="getJxnrCourseVOPageByCourseIds"  resultType="com.hebut.sdsjxxt.dvo.JxnrCourseVO">
+		select jxnr.id,jxnr.course_id,jxnr.course_name,jxnr.course_aim,jxnr.course_content,
+		jxnr.weight,jxnr.grade,jxnr.leave,jxnr.create_user_id,jxnr.create_time, jxnr.update_time,
+		jxnr.crc64_course_aim,jxnr.crc64_course_content,jxnr.sf_finished,jxnr.sf_tj,
+		course.grade as grade2, course.start_year,course.start_date ,course.end_date,
+		course.teacher_name,course.banji_ids
+		from jxnr left join course on jxnr.course_id = course.id 
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	<select id="getJxnrJxzyCount"  resultType="java.util.HashMap">
+		select jxnr.id,count(*) as jxzyCount 
+		from jsjxzy left join jxnr on jsjxzy.jxnr_id=jxnr.id 
+		group by jxnr.id
+	</select>
+	<select id="getJxnrTjVOPageByCondition"  resultType="com.hebut.sdsjxxt.dvo.JxnrTjVO">
+		select jxnr.id as jxnrId, jsjxzy.id as jxzyId,xszy.id as xszyId,jsjxzy.stage ,user.xuehao,user.name,
+		user.banji_name as banjiName,user.banji_id  as banjiId,jxnr.grade as jxnrGrade,jxnr.sf_tj,
+		jsjxzy.total_score as totalScore,xszy.stu_score as stuScore,jsjxzy.grade as jxzyGrade,xszy.grade as xszyGrade 
+		from  jxnr left join jsjxzy on jxnr.id=jsjxzy.jxnr_id  
+		      left join xszy on jsjxzy.id=xszy.jsjxzy_id  
+		      left join user on xszy.user_id=user.xuehao
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	
+	<select id="getBanjiIdsByJxnrId" parameterType="java.lang.Long" resultType="java.lang.String">
+		select course.banji_ids from jxnr left join course on jxnr.course_id=course.id
+		where jxnr.id=#{id}
+	</select>
+</mapper>

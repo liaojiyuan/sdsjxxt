@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hebut.sdsjxxt.mapper.JsjxzyMapper">
+	
+	<select id="getJsjxzyJxnrCourseVOByCondition"  
+		resultType="com.hebut.sdsjxxt.dvo.JsjxzyJxnrCourseVO">
+	select jsjxzy.id ,jsjxzy.jxnr_id,jsjxzy.course_id,jsjxzy.stage,jsjxzy.weight,jsjxzy.grade,
+		jsjxzy.total_score,jsjxzy.homework,jsjxzy.start_time,jsjxzy.end_time,
+		jsjxzy.create_user_id,jsjxzy.status,jsjxzy.sf_finished,
+		jxnr.leave as jxnrLeave,jxnr.course_content as courseContent,jxnr.grade as jxnrGrade,
+		course.name as courseName ,course.banji_ids,
+		(case when jsjxzy.stage=1 then '课前' 
+			  when jsjxzy.stage=2 then '课中' 
+			  when jsjxzy.stage=3 then '课后'
+		 end
+		) as stageName ,
+		(case when jsjxzy.status=1 then '刚创建,未发布' 
+		      when jsjxzy.status=2 then '已发布，未结束' 
+		      when jsjxzy.status=3 then '已结束' 
+		  end
+		) as statusName 
+		from jsjxzy left join jxnr on jsjxzy.jxnr_id=jxnr.id 
+		left join course on jsjxzy.course_id=course.id
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	
+	<select id="getJsjxzyJxnrCourseVOPageByCondition" 
+		resultType="com.hebut.sdsjxxt.dvo.JsjxzyJxnrCourseVO">
+	select jsjxzy.id ,jsjxzy.jxnr_id,jsjxzy.course_id,jsjxzy.stage,jsjxzy.weight,jsjxzy.grade,
+		jsjxzy.total_score,jsjxzy.homework,jsjxzy.start_time,jsjxzy.end_time,
+		jsjxzy.create_user_id,jsjxzy.status,jsjxzy.sf_finished,
+		jxnr.leave as jxnrLeave,jxnr.course_content as courseContent,jxnr.grade as jxnrGrade,
+		course.name as courseName ,course.banji_ids,
+		(case when jsjxzy.stage=1 then '课前' 
+			  when jsjxzy.stage=2 then '课中' 
+			  when jsjxzy.stage=3 then '课后'
+		 end
+		) as stageName,
+		(case when jsjxzy.status=1 then '刚创建,未发布' 
+		      when jsjxzy.status=2 then '已发布，未结束' 
+		      when jsjxzy.status=3 then '已结束' 
+		  end
+		) as statusName   
+		from jsjxzy left join jxnr on jsjxzy.jxnr_id=jxnr.id 
+		left join course on jsjxzy.course_id=course.id
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	
+	<update id="updateJxzyStatusBatchById" parameterType="java.util.List">
+		update jsjxzy 
+		<trim prefix="set" prefixOverrides=",">
+			<trim prefix="status =case" suffix="end ,">
+				<foreach collection="jxzyList" index="index" item="item" >
+					 when id=#{item.id,jdbcType=BIGINT} then #{item.status,jdbcType=INTEGER} 
+				</foreach>
+			</trim>
+			<trim prefix="update_time=case" suffix=" end ">
+				<foreach collection="jxzyList" index="index" item="item" >
+					when id=#{item.id} then NOW()
+				</foreach>
+			</trim>
+		</trim>
+		where id in
+		<foreach collection="jxzyList" index="index" item="item" open="(" separator="," close=")">
+			#{item.id,jdbcType=BIGINT}
+		</foreach>
+	</update>
+	<update id="updateJxzyStatusById" >
+		update jsjxzy 
+		set status=#{status,jdbcType=INTEGER}, 
+		update_time=NOW() 
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateJxzyStatus" parameterType="com.hebut.sdsjxxt.pojo.Jsjxzy" >
+		update jsjxzy 
+		set status=#{status,jdbcType=INTEGER}, 
+		update_time=NOW() 
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="getBanjiIdsByJsjxzyId" parameterType="java.lang.Long" resultType="java.lang.String">
+		select course.banji_ids from jsjxzy left join course on jsjxzy.course_id=course.id
+		where jsjxzy.id=#{id}
+	</select>
+	
+	<select id="getJxzyTjVOPageByCondition"  resultType="com.hebut.sdsjxxt.dvo.JxzyTjVO">
+		select jsjxzy.id as jxzyId,user.xuehao,user.name,user.banji_name as banjiName,user.banji_id  as banjiId,xszy.id as xszyId,
+		jsjxzy.total_score as totalScore,xszy.stu_score as stuScore,jsjxzy.grade as jxzyGrade,xszy.grade as xszyGrade 
+		from  jsjxzy left join xszy on jsjxzy.id=xszy.jsjxzy_id  left join user on xszy.user_id=user.xuehao
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+	
+</mapper>

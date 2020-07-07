@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>三段式教学系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/assets/css/bootstrap-table.css"/>
+	<link rel="stylesheet" href="/assets/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="/assets/css/express.css">
+    
+    <script src="/assets/js/common.js"  type="text/javascript"></script>
+	<script src="/assets/js/jxzy.js"  type="text/javascript"></script>
+	<script src="/assets/js/moment.js"  type="text/javascript"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <!-- 顶栏 -->
+    <nav class="navbar navbar-default alert-info">
+        <div class="container-fluid">
+            <div class="navbar-header alert-info">
+                <a class="navbar-brand ">三段式教学系统【教师端】</a>
+                <a class="navbar-brand " href="http://localhost:8080/bbs" target="_blank">进入论坛</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="btn btn-secondary  btn-lg dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" >
+                        <span class=" glyphicon glyphicon-user" id="showUser"></span>
+                    </a>
+                    <ul class="dropdown-menu text-center">
+                    	<li class="dropdown-item  "><span id="logout"  style="cursor:pointer ">退出 </span></li>
+                        <li class="dropdown-item  "><span id='span-password'  style="cursor:pointer" data-toggle="modal"
+			                  data-target="#updatePassword">重置密码</span></li>
+						<li class="dropdown-item  "><span id='span-userinfo'  style="cursor:pointer" data-toggle="modal"
+			                  data-target="#userinfoModel">个人资料</span></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- 主体 -->
+    <div class="row">
+		<input type="hidden" id="userXuehao" value="">
+        <!-- 左侧菜单 -->
+        <div class="col-md-2">
+            <ul class="nav nav-pills nav-stacked" id="nav">
+                <li ><a href="/teacher/index">我的课程<span class="glyphicon glyphicon-envelope pull-right"></span></a></li>
+                <li ><a href="/teacher/jxnrcenter">教学内容管理<span class="glyphicon glyphicon-tasks pull-right"></span></a></li>
+                <li class="active"><a href="/teacher/jxzycenter">教学作业管理<span class="glyphicon glyphicon-tasks pull-right"></span></a></li>
+                <li ><a href="/teacher/xszyglzx">学生作业管理<span class="glyphicon glyphicon-tasks pull-right"></span></a></li>
+<!--                 <li><a href="/password">统计分析<span class="glyphicon glyphicon-pencil pull-right" ></span></a></li>
+ -->            
+           </ul>
+        </div>
+    	<!--右侧数据  -->
+    	<div class="panel col-md-10">
+    		<!--  筛选条件-->
+    		<div class="panel-heading">
+    			<form class="form-inline ">
+    				<div class="form-group">
+                        <label for="inputName" class="ml10">作业状态</label>
+                        <select  class="form-control ml10  selectpicker" id="status" >
+                        	<option value="" selected>全部状态</option>
+                        	<option value="1">刚创建,未发布</option>
+                        	<option value="2">已发布，未结束</option>
+                        	<option value="3">已结束</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputName" class="ml10">作业阶段</label>
+                        <select  class="form-control ml10  selectpicker" id="stage" >
+                        	<option value="" selected>全部阶段</option>
+                        	<option value="1">课前</option>
+                        	<option value="2">课中</option>
+                        	<option value="3">课后</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputName" class="ml10">课程名称</label>
+                        <select  class="form-control ml10 selectpicker select_width" id="courseName" data-live-search="true">
+                        </select>
+                    </div>
+                    <div class="form-group">
+	                    <label for="inputStartYear" class="ml10">开课年份</label>
+	                    <input type="text" class="form-control ml10" id="startYear">
+	                </div>
+                    <div class="form-group ml20">
+                        <label for="inputBanjiIds" class="ml10">授课班级</label>
+                        <select class="form-control ml10 selectpicker select_width" id="banjiIds" data-live-search="true">
+                        	
+                        </select>
+                    </div>
+                    
+                </form>
+                <form class="form-inline  pt10">
+                	<div class="form-group ">
+                        <label for="inputStartDate" class="ml10">作业开始时间范围</label>
+                        <input type="text" id="startTimeRange" class="form-control ml10 datetimerange_width">
+                    </div>
+                    <div class="form-group ml10">
+                        <label for="inputStartDate" class="ml10">作业结束时间范围</label>
+                        <input type="text" id="endTimeRange" class="form-control ml10 datetimerange_width">
+                    </div>
+                    <button type="button" class="btn btn-success ml10" onclick="flushTable()">条件查询</button>
+               </form>
+    		</div>
+    		<div class="panel-body">
+    			<div style="text-align:center;">
+    				<table id="tb_jxzy" style="margin:auto;"  class="table table-hover table-border"></table>
+    			</div>
+    		</div>
+    		
+    		<!--教学作业详情模态框 -->
+            <div class="modal fade" id="infoModel" tabindex="-1" role="dialog" aria-labelledby="infoModelLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="infoModelLabel">教学作业详情</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form class="form-horizontal">
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">课程名称</label>
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static" id="inputCourseName"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">教学内容</label>
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static" id="inputCourseContent" ></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputTeacherName" class="col-sm-2 control-label">作业阶段</label>
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static" id="inputStage"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputBanjiIds" class="col-sm-2 control-label">作业权值</label>
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static" id="inputWeight"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputStartYear" class="col-sm-2 control-label">总分值</label>
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static" id="inputTotalScore"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputStartYear" class="col-sm-2 control-label">作业内容</label>
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static" id="inputHomework"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputStartYear" class="col-sm-3 control-label">作业开始时间</label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static" id="inputStartTime"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputStartYear" class="col-sm-3 control-label">作业结束时间</label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static" id="inputEndTime"></p>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+    		<!-- 教学作业编辑模态框 -->
+    		<div class="modal fade" id="editJxzyModel" tabindex="-1" role="dialog" aria-labelledby="editJxzyModelLabel">
+    		    <div class="modal-dialog" role="document">
+    		        <div class="modal-content">
+    		            <div class="modal-header">
+    		                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    		                <h4 class="modal-title" id="infoModelLabel">编辑教学作业内容</h4>
+    		            </div>
+    		            <div class="modal-body">
+    		                <form class="form-horizontal" id="editjxzyform">
+    		                    <input  id="edit_jxzy_id" name="id" class=" form-control hidden" />
+    		                    <input  id="edit_jxzy_jxnr_id" name="jxnrId" class=" form-control hidden" />
+    		                    <input  id="edit_jxzy_course_id" name="courseId" class=" form-control hidden" />
+    		                    <input  id="edit_jxzy_create_user_id" name="createUserId" class=" form-control hidden" />
+								<div class="form-group">
+									<label for="inputTeacherId" class="col-sm-2 control-label">课程名称</label>
+									<div class="col-sm-10">
+										<p  id="edit_jxzy_course_name"  class="form-control-static"  ></p>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputBanjiIds" class="col-sm-2 control-label">教学内容</label>
+									<div class="col-sm-10">
+										<p class="form-control-static" id="edit_jxzy_course_content"></p>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputBanjiIds" class="col-sm-2 control-label"><span class="red-span ">*</span>阶段</label>
+									<div class="col-sm-10">
+										<select class="form-control selectpicker" id="edit_jxzy_stage" name="stage">
+											<option value ="1">课前</option>
+											<option value ="2">课中</option>
+											<option value ="3">课后</option>
+										</select>
+									</div>
+								</div>
+								<div class="form-group">
+									<p class="text-center">当前该教学内容还剩余<span class="red-span" id="edit_jxzy_leave"><strong>1.00</strong></span>权重可分配</p>
+									<input type="text" class="hidden form-control" id="old_weight"/>
+									<label for="inputStartYear" class="col-sm-2 control-label"><span class="red-span">*</span>权重</label>
+									<div class="col-sm-10">
+										<input type="number" name="weight" id="edit_jxzy_weight" class="form-control" max="1.00" min="0.00" step="0.05" value="0.00"/>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputStartYear" class="col-sm-2 control-label"><span class="red-span">*</span>总分值</label>
+									<div class="col-sm-10">
+										<input type="number" name="totalScore" id="edit_jxzy_total_score" class="form-control" max="100" min="0" step="1" value="100"/>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputStartYear" class="col-sm-2 control-label"><span class="red-span">*</span>作业内容</label>
+									<div class="col-sm-10">
+										<textarea  name="homework" id="edit_jxzy_homework" class="form-control" rows="8">
+										</textarea>
+									</div>
+								</div>
+								 <div class="form-group">
+		                              <label for="inputStartDate" class="col-sm-3 control-label"><span class="red-span">*</span>作业开始时间</label>
+		                              <div class="col-sm-9">
+		                                  <input type="text" class="form-control" id="edit_jxzy_start_time" name="startTime"/>
+		                              </div>
+		                          </div>
+		                          <div class="form-group">
+		                              <label for="inputEndDate" class="col-sm-3 control-label"><span class="red-span">*</span>作业截止时间</label>
+		                              <div class="col-sm-9">
+		                                  <input type="text" class="form-control" id="edit_jxzy_end_time" name="endTime"/>
+		                              </div>
+		                          </div>
+    		                </form>
+    		            </div>
+    		            <div class="modal-footer">
+		                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+		                    <button type="submit" class="btn btn-primary" id="btn-edit-jxzy-save">保存</button>
+		                    <button type="submit" class="btn btn-primary" id="btn-editToNew-jxzy-save">另存为新教学作业</button>
+	                	</div>
+    		        </div>
+    		    </div>
+    		</div>
+    		
+    	</div>
+    	
+    	 <!-- 修改密码弹框 -->
+	    <div class="modal fade" id="updatePassword" tabindex="-1" role="dialog" aria-labelledby="updatePasswordLabel">
+	        <div class="modal-dialog" role="document">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+	                            aria-hidden="true">&times;</span></button>
+	                    <h4 class="modal-title" id="updatePasswordLabel">重置密码</h4>
+	                </div>
+	                <div class="modal-body">
+	                    <form class="form-horizontal" method="post" action="/password" id="updatePasswordForm">
+	                        <div class="form-group">
+	                            <label for="oldPassword" class="col-xs-4 control-label">旧密码：</label>
+	                            <div class="col-xs-6">
+	                                <input type="password" class="form-control" id="oldPassword" name="oldPassword"
+	                                       placeholder="请输入原密码">
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                            <label for="newPassword" class="col-xs-4 control-label">新密码：</label>
+	                            <div class="col-xs-6">
+	                                <input type="password" class="form-control" id="newPassword" name="newPassword"
+	                                       placeholder="请输入新密码">
+	                            </div>
+	                        </div>
+	                        <div class="form-group">
+	                            <label for="password_confirm" class="col-xs-4 control-label">确认密码：</label>
+	                            <div class="col-xs-6">
+	                                <input type="password" class="form-control" id="password_confirm"
+	                                       name="password_confirm"
+	                                       placeholder="请再次输入新密码">
+	                            </div>
+	                        </div>
+	                    </form>
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+	                    <button type="submit" class="btn btn-primary" id="btn-password-save">修改密码</button>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+   
+   		<!-- 个人信息模态框 -->
+        <div class="modal fade" id="userinfoModel" tabindex="-1" role="dialog" aria-labelledby="userinfoModelLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="infoModelLabel">用户个人信息</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="inputId" class="col-sm-2 control-label">学号</label>
+                                <div class="col-sm-10">
+                                    <p class="form-control-static" id="user_xuehao"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputName" class="col-sm-2 control-label">姓名</label>
+                                <div class="col-sm-10">
+                                    <p class="form-control-static" id="user_name"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label id="input_banjiName" for="input_banjiName" class="col-sm-2 control-label">班级</label>
+                                <div class="col-sm-10">
+                                    <p class="form-control-static" id="user_banjiName"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputBanjiIds" class="col-sm-2 control-label">注册日期</label>
+                                <div class="col-sm-10">
+                                    <p class="form-control-static" id="user_createTime"></p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+    
+    
+</div>
+<script src="/assets/js/jquery3.3.1.min.js" type="text/javascript"></script>
+<script src="/assets/js/jquery.validate.min.js"  type="text/javascript"></script>
+<script src="/assets/js/jquery.form.min.js"  type="text/javascript"></script>
+<script src="/assets/js/bootstrap.min.js"  type="text/javascript"></script>
+<script src="/assets/js/bootstrap-table.min.js"></script>
+<script src="/assets/js/bootstrap-table-zh-CN.min.js"></script>
+<script src="/assets/js/bootstrap-table-export.min.js"></script>
+<script src="/assets/js/tableExport.min.js"></script>
+<script src="/assets/js/bootstrap-select.min.js" type="text/javascript"></script>
+<script src="/assets/laydate/laydate.js"  type="text/javascript"></script>
+<script src="/assets/layer/layer.js"  type="text/javascript"></script>
+<script src="/assets/js/http.js"  type="text/javascript"></script>
+<!--form表单json序列化  -->
+<script src="/assets/js/jquery.serializejson.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+	
+	var arrayYear=["startYear"];
+	renderYear(arrayYear);
+	var arrayTime=["edit_jxzy_start_time","edit_jxzy_end_time"]
+	renderDateTime(arrayTime);
+	var arrayTimeRange=["startTimeRange","endTimeRange"]
+	renderDateTimeRange(arrayTimeRange);
+	
+    $().ready(function () {
+    
+    	//获取登录名显示在主页    保存当前用户的凭证学号userXuehao
+        getUserInfo();
+       
+		//注销
+		logout($("#logout"));
+		
+		//重置密码模态框，点击保存后验证并提交表单
+		$("#btn-password-save").click(function(){
+			$("#updatePasswordForm").submit();
+		});  //重置密码表单验证和提交
+		resetpwd($("#updatePasswordForm"));
+		
+		//个人信息显示模态框加载时给值
+	    showUserInfo("userinfoModel");
+		
+	    //selectpicker下拉框选项值显示个数限制
+	    selectCountSize();
+	   
+		//数据过滤   条件查询  课程名称，该课程名称只能是当前用户的课程（教师开设，或者学生所在班级参与的）,班级下拉可选全部班级
+        initSelectList("/course/userList",$("#courseName"),true,"id","name");
+		initSelectList("/banji/userList",$("#banjiIds"),true,"id","name");
+		
+		//1、初始化Table
+        var oTable = new TableInit();
+        oTable.Init();
+		
+		
+		//修改教学作业事件，1 模态框显示时动态初始化 剩余权重值  
+		$('#editJxzyModel').on('shown.bs.modal', function (){
+			var jxnrId=$("#edit_jxzy_jxnr_id ").val(); //教学内容id
+			//alert(jxnrId);
+			sendJson("get","/jxnr/leaveWeight/"+jxnrId,{},true,
+       			function(res){
+       				if(res.status){
+       				//alert(res.data.leave);
+       					$("#edit_jxzy_leave").text(res.data.leave);
+       					//alert(Number(res.data.leave));
+       					//alert($("#edit_jxzy_weight").val());
+       					$("#edit_jxzy_weight").attr('max',Number($("#edit_jxzy_weight").val())+Number(res.data.leave));
+       				}else{
+       					layer.msg("获取该教学内容的剩余权重出错",{icon:2});
+       				}
+       			},function(){
+       				layer.msg("未知错误",{icon:2});
+       			}
+       		);
+		});
+		
+		//修改教学作业事件  2.1 模态框提交时点击的按钮是  保存
+		editJxzySave("/jxzy/toedit","btn-edit-jxzy-save","editjxzyform","editJxzyModel");
+		
+		//修改教学作业事件  2.2  模态框提交时点击的按钮是 另存为新教学作业
+		editJxzySave("/jxzy/toeditNew","btn-editToNew-jxzy-save","editjxzyform","editJxzyModel");
+		
+	});
+	
+	 var TableInit = function () {
+	       var oTableInit = new Object();
+	       //初始化Table
+	       oTableInit.Init = function () {
+	           $('#tb_jxzy').bootstrapTable({
+	               url: '/jxzy/tableList',         //请求后台的URL（*）
+	               method: 'get',                      //请求方式（*）
+	             //  toolbar: '#toolbar',                //工具按钮组id
+	               striped: false,                      //是否显示行间隔色
+	               cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+	               pagination: true,                   //是否显示分页（*）
+	               sortable: false,                    //是否启用排序
+	               sortOrder: "desc",                   //排序方式
+	               queryParams: oTableInit.queryParams,//传递参数（*）
+	               sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+	               pageNumber:1,                       //初始化加载第一页，默认第一页
+	               pageSize:10,                       //每页的记录行数（*）
+	               pageList: '[10, 20,50,ALL]',        //可供选择的每页的行数（*）
+	               search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端。后台分页时意义不大
+	               showColumns: true,                  //是否显示所有的列
+	               showRefresh: true,                  //是否显示刷新按钮
+	               minimumCountColumns: 2,             //最少允许的列数
+	               clickToSelect: true,                //是否启用点击选中行
+	               // height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+	               uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+	               showToggle:false,                   //是否显示详细视图和列表视图的切换按钮
+	               cardView: false,                    //是否显示详细视图
+	               detailView: false,                  //是否显示父子表
+	               showExport: true,                   //是否显示导出
+	               exportDataType: "basic",              //导出的模式是当前页basic、所有数据all、选中数据selected。
+	               exportTypes:['excel'],  //导出文件类型
+	               exportOptions:{  
+                       ignoreColumn: [9],  //忽略某一列的索引  
+                       fileName: '教学作业列表',  //文件名称设置  
+                       worksheetName: 'sheet1',  //表格工作区名称  
+                       tableName: '教学作业列表',
+                       onCellHtmlData: DoOnCellHtmlData
+                   },
+	               columns: [{
+	                   field: 'courseName',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   title: '课程名称',
+	                   formatter :function(value) {
+                           if(typeof(value) == 'undefined'){
+                               return '';
+                           }
+                           if(value.length > 10){
+                               return '<span title="'+value+'">'+value.substring(0,10)+'...</span>';
+                           }else{
+                               return value;
+                           }
+                       }
+	               }, {
+	                   field: 'courseContent',
+	                   title: '教学内容',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   formatter : function(value) {
+                           if(typeof(value) == 'undefined'){
+                               return '';
+                           }
+                           if(value.length > 10){
+                               return '<span title="'+value+'">'+value.substring(0,10)+'...</span>';
+                           }else{
+                               return value;
+                           }
+                       }
+	               }, {
+	                   field: 'stageName',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   title: '作业阶段'
+	               },{
+	                   field: 'totalScore',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   title: '总分值'
+	               },{
+	                   field: 'weight',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   title: '权值'
+	               },{
+	                   field: 'homework',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   title: '作业内容',
+	                   formatter : function(value) {
+                           if(typeof(value) == 'undefined'){
+                               return '';
+                           }
+                           if(value.length > 10){
+                               return '<span title="'+value+'">'+value.substring(0,10)+'...</span>';
+                           }else{
+                               return value;
+                           }
+                       }
+	               },{
+	                   field: 'startTime',
+	                   align: 'center',
+	                   valign: 'middle',
+	                   title: '作业开始时间'
+	               },{
+	                   field: 'endTime',
+	                   align: 'center',
+	                   valign:'middle',
+	                   title: '作业结束时间'
+	               },{
+	                   field: 'statusName',
+	                   align: 'center',
+	                   valign:'middle',
+	                   title: '作业状态'
+	               },{
+	                   field: 'id',
+	                   title: '操作',
+	                   width: 120,
+	                   align: 'center',
+	                   valign: 'middle',
+	                   formatter: actionFormatter
+	               }]
+	           });
+	       };
+	       
+	       // 传递给后台的参数
+          oTableInit.queryParams = function (params) {
+          	return {
+          		rows:params.limit,                   //页面大小
+          		page:(params.offset/params.limit)+1, //页码
+          		status:$("#status option:selected").val(), // 教学作业状态 默认全部状态
+          		stage:$("#stage option:selected").val(), // 教学作业阶段  默认全部阶段 课前，课中，课后
+          		courseId: $("#courseName option:selected").val(),  //课程id
+          		startYear: $("#startYear").val(),
+          		banjiIds: $("#banjiIds option:selected").val(),
+                startTime1:function(){
+                	var date=$("#startTimeRange").val();
+                	if(!isNull(date)){
+                		return date.split("~")[0];
+                	}
+                },
+                startTime2:function(){
+                	var date=$("#startTimeRange").val();
+                	if(!isNull(date)){
+                		return date.split("~")[0];
+                	}
+                },
+                endTime1:function(){
+                	var date=$("#endTimeRange").val();
+                	if(!isNull(date)){
+                		return date.split("~")[0];
+                	}
+                },
+                endTime2:function(){
+                	var date=$("#endTimeRange").val();
+                	if(!isNull(date)){
+                		return date.split("~")[0];
+                	}
+                }
+          	};
+        };
+        return oTableInit;
+	}
+	
+	//操作栏格式化  当前登录用户只能看到自己创建的教学内容列表
+	//有修改，删除，查看功能，删除，修改有后台约束
+	//有统计功能，该次教学作业完成后，可以查看学生成绩等信息
+	function actionFormatter(value,row,index){
+		var ck='    <button class="btn btn-xs btn-info" onclick="showJxzyDetail('+row.id+')" title="查看教学作业"><span class="glyphicon glyphicon-eye-open"></span></button>\n';
+		var result='';
+		if(moment(new Date()).isBetween(row.startTime,row.endTime)){
+			result='<button class="btn btn-xs btn-info" onclick="editJxzy('+row.id+')" title="修改"><span class="glyphicon glyphicon-pencil"></span></button>\n'
+			+'    <button class="btn btn-xs btn-info" onclick="deleteJxzy('+row.id+')" title="删除"><span class="glyphicon glyphicon-trash"></span></button>\n';
+		}
+		result=result+ck;
+		var cktj='<button class="btn btn-xs btn-info" onclick="analysisJxzy('+row.id+')" title="学生成绩分析"><span class="glyphicon glyphicon-stats"> 统计</span></button>\n';
+		/* if(row.sfFinished==1){
+			result+=cktj;
+		} */
+		result=result+cktj;
+		return result;
+	}
+	
+	//点击查看教学作业统计表
+	function  analysisJxzy(id){
+		sendJson("get","/jxzy/tjfx/"+id,{},false,function(res){
+			if(res.status){
+				window.open(res.data,"_blank");
+			}
+		})
+	}
+	
+	//点击修改显示教学作业初始化信息（可编辑状态） 
+	function editJxzy(id){
+		sendJson("get","/jxzy/edit/"+id,{},false,function(res){
+			if(res.status){
+				var data=res.data;
+				//alert(JSON.stringify(data));
+				//初始化模态框信息
+				//alert(data.id)
+				$(" #edit_jxzy_id").val(data.id);  //hidden
+				//alert($(" #edit_jxzy_id").val());
+				$(" #edit_jxzy_jxnr_id").val(data.jxnrId);  //hidden
+				$(" #edit_jxzy_course_id").val(data.courseId);  //hidden
+				$(" #edit_jxzy_create_user_id").val(data.createUserId);  //hidden
+				$("#edit_jxzy_course_name").text(data.courseName); //show static
+				$("#edit_jxzy_course_content ").text(data.courseContent); //show static
+				var stage=data.stage;
+				$("#edit_jxzy_stage").selectpicker('val',stage);
+				$("#edit_jxzy_stage option").each(function(){
+					if(stage==$(this).val()){
+						$(this).attr('selected','selected');
+					}
+				});
+				$("#edit_jxzy_weight").val(data.weight);  //edit
+				$("#old_weight").val(data.weight); //保存权重值，编辑提交验证js用到
+				$("#edit_jxzy_total_score").val(data.totalScore);  //edit
+				$("#edit_jxzy_homework").val(data.homework);  //edit
+				$("#edit_jxzy_start_time").val(data.startTime);  //edit
+				$("#edit_jxzy_end_time").val(data.endTime);  //edit
+				//显示模态框
+				$("#editJxzyModel").modal("show");
+			}else{
+				layer.msg(res.info,{icon:2});
+			}
+		},function(){
+			layer.msg("未知错误",{icon:2});
+		});
+	}
+	
+	//删除教学内容询问信息
+	function deleteJxzy(id){
+		layer.confirm('确定要删除该条教学内容信息吗？', {
+			  btn: ['确定','在想想'] //按钮
+			}, function(){
+			  sendJson("get","/jxzy/delete/"+id,{},false,function(res){
+			  	if(res.status){
+			  		layer.msg(res.info,{icon:1});
+			  		flushTable();
+			  	}else{
+			  		layer.msg(res.info,{icon:2});
+			  	}
+			  },function(){
+			  		layer.msg("发生未知错误",{icon:2});
+			  });
+			}, function(){
+			  
+		});
+	}
+	
+    //刷新表格
+	function flushTable() {
+        $("#tb_jxzy").bootstrapTable('refresh',{url : '/jxzy/tableList'} );
+    }
+    //每隔1分钟刷新表格一次
+    setInterval(function() {
+        flushTable();
+}, 60000);
+</script>
+</body>
+</html>

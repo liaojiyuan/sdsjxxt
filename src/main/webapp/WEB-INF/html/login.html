@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>三段式教学系统</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/assets/css/login.css"/>
+</head>
+<body>
+
+<div class="container">
+    <div class="row col-sm-8 col-sm-offset-2">
+    	<!-- <div class="col-sm-5 col-xs-12">
+            <h1><span class="text-primary">三段式教学</span></h1>
+            <h1>系统平台</h1>
+        </div> -->
+        <div class="col-sm-8 col-sm-offset-2">
+        	<h1><span class="text-primary text-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;三段式教学系统平台</span></h1>
+            <form class="form-horizontal" method="get">
+                <span class="heading">用户登录</span>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="xuehao" placeholder="请输入学号/工号">
+                </div>
+                <div class="form-group help">
+                    <input type="password" class="form-control" id="password" placeholder="请输入密码">
+                </div>
+                <div class="form-group help">
+                    <input type="text" class="form-control" id="inputVerify" placeholder="请输入验证码">
+                </div>
+                <div class="form-group">
+                    <img src="getVerifyCode" title="看不清，请点我" onclick="refresh(this)" onmouseover="mouseover(this)"/>
+                	 <button type="button" class="btn btn-default col-sm-4 col-sm-offset-2" onclick="submitLogin()">登录</button>
+                </div>
+            </form>
+             <a href="register" class=" col-sm-6 col-sm-offset-1 col-xs-5 col-xs-offset-2">没有账号?立即注册</a>
+        	 <div class="row">
+        	 	<a href="http://localhost:8080/bbs" target="_blank">上论坛</a>
+        	 </div>
+        </div>
+    </div>
+</div>
+
+<script src="/assets/js/jquery3.3.1.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/layer/layer.js"></script>
+<script src="/assets/js/http.js"></script>
+<script>
+    function refresh(obj) {
+        obj.src = "getVerifyCode?" + Math.random();
+    }
+
+    function mouseover(obj) {
+        obj.style.cursor = "pointer";
+    }
+
+    function submitLogin() {
+        var username = $("#xuehao").val();
+        var password = $("#password").val();
+        if(username === "" || password === "") {
+            layer.msg("学号或密码不能为空",{icon:0});
+            return false;
+        }
+		var verifyCode= $("#inputVerify").val();
+		if(verifyCode==""|| verifyCode==null){
+			 layer.msg("请输入验证码",{icon:0});
+            return false;
+		}
+        sendJson("post", "/checkVerifyCode", {"data": $("#inputVerify").val()}, false, function (res) {
+            if (!res.status) {//校验验证码
+                layer.msg(res.info,{icon:2});
+                 $("#inputVerify").val('');
+                 $("img").click();
+            } else {//验证码通过，校验用户登录信息
+                sendJson("post", "/login", {"xuehao":username,"password":password}, false, function (res) {
+                    if (!res.status) {
+                        layer.msg(res.info,{icon:2});
+                        $("#inputVerify").val('');
+                 		$("img").click();
+                    } else {
+                        window.location.href=res.data;
+                    }
+                }, function () {
+                    layer.msg("未知错误",{icon:2});
+                });
+            }
+        }, function () {
+            layer.msg("未知错误",{icon:2});
+        });
+    }
+</script>
+</body>
+</html>
